@@ -1,0 +1,81 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'io.ticlext'
+version '1.2'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+ext {
+    try {
+        File props = new File(projectDir, 'gradle.properties')
+        if (!props.exists())
+            props.createNewFile()
+        File atom = new File(projectDir, '../../Atomic/Atom')
+        if (atom.exists() && props.exists()) {
+            String s = "-SNAPSHOT"
+            try {
+                Process gitRevProcess = Runtime.getRuntime().exec("git rev-parse HEAD", new String[0], atom);
+                gitRevProcess.waitFor();
+                s = new BufferedReader(new InputStreamReader(gitRevProcess.getInputStream())).readLine().trim();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (!properties.containsKey("atomHash") || s != atomHash) {
+                Properties properties = new Properties()
+                StringWriter writer = new StringWriter()
+                properties.load(props.toURI().toURL().openStream())
+                properties.put("atomHash", s)
+                properties.store(writer, "Touch")
+                props.write(writer.toString())
+                atomHash = s
+            }
+        }
+    } catch (Throwable e) {
+        e.printStackTrace()
+    }
+    atomModule = { String module ->
+        boolean b = new File(rootDir, '../../Atomic/Atomz').exists()
+        //b = false
+        if (b) {
+            return project(":Atom" + module)
+        } else {
+            return "com.github.o7-Fire.Atomic-Library$module:$atomHash"
+        }
+    }
+
+}
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    implementation(atomModule(":Atomic"))
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.14.3'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.9.0'
+    implementation 'com.opencsv:opencsv:5.6'
+}
+
+test {
+    useJUnitPlatform()
+}
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    archiveName(project.name + ".jar")
+}
+
+application {
+    mainClassName = 'io.ticlext.Main'
+}
+
+//https://stackoverflow.com/questions/32088966/gradle-generated-startscript-for-windows-produces-input-line-is-too-long
+startScripts {
+    doLast {
+        def winScriptFile = file getWindowsScript()
+        def winFileText = winScriptFile.text
+        winFileText = winFileText.replaceAll('set CLASSPATH=.*', 'rem original CLASSPATH declaration replaced by:\nset CLASSPATH=%APP_HOME%\\\\lib\\\\\\*')
+        winScriptFile.text = winFileText
+    }
+}

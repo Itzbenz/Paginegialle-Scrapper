@@ -1,0 +1,19 @@
+rootProject.name = 'Paginegialle'
+
+println "JDK: " + JavaVersion.current()
+
+def use = { ... names ->
+    for (String name : names) {
+        include(name)
+        project(name).projectDir = new File(settingsDir, "../../Atomic/${name.substring(1).replace(":", "/")}")
+    }
+}
+
+
+if (new File(settingsDir, '../../Atomic/Atoam').exists()) {//to trick intellij so magic work in that folder
+    use(
+            ":Atom",
+            ":Atom:Atomic",
+            ":Atom:Desktop"
+    )
+}
