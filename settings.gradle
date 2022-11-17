@@ -10,7 +10,7 @@ def use = { ... names ->
 }
 
 
-if (new File(settingsDir, '../../Atomic/Atoam').exists()) {//to trick intellij so magic work in that folder
+if (new File(settingsDir, '../../Atomic/Atom').exists()) {//to trick intellij so magic work in that folder
     use(
             ":Atom",
             ":Atom:Atomic",

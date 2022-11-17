@@ -39,7 +39,7 @@ ext {
         e.printStackTrace()
     }
     atomModule = { String module ->
-        boolean b = new File(rootDir, '../../Atomic/Atomz').exists()
+        boolean b = new File(rootDir, '../../Atomic/Atom').exists()
         //b = false
         if (b) {
             return project(":Atom" + module)
